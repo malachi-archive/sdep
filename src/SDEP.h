@@ -1,5 +1,6 @@
 #pragma once
 
+#include "sdep.h"
 #include "spi_shim.h"
 
 // TODO: refactor naming
