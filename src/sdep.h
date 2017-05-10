@@ -1,1 +1,0 @@
-../ext/Adafruit_BluefruitLE_nRF51/utility/sdep.h

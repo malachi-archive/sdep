@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sdep.h"
+#include "adafruit/sdep.h"
 #include "spi_shim.h"
 
 #ifndef ARDUINO
