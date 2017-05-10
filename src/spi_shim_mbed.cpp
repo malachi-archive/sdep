@@ -2,24 +2,13 @@
 
 #include "spi_shim.h"
 #include <mbed.h>
-#include <SPI.h>
 
 
 namespace FactUtilEmbedded
 {
-
-template <>
-class spi_traits< ::SPI>
-{
-public:
-    static bool can_set_bitwidth() { return true; }
-    static bool can_set_dataorder() { return false; }
     
-    static bool async() { return DEVICE_SPI_ASYNC == 1; }
-};
-
 template <>
-uint16_t SPI< ::SPI>::transfer(uint16_t value)
+int SPI< ::SPI>::transfer(uint16_t value)
 {
     return spi.write(value);
 }
