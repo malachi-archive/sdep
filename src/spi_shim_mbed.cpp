@@ -9,6 +9,14 @@ namespace FactUtilEmbedded
 {
 
 template <>
+class spi_traits< ::SPI>
+{
+public:
+    static bool can_set_bitwidth() { return true; }
+    static bool can_set_dataorder() { return false; }
+};
+
+template <>
 uint16_t SPI< ::SPI>::transfer(uint16_t value)
 {
     return spi.write(value);
