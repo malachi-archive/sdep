@@ -8,6 +8,14 @@ namespace FactUtilEmbedded
 template <class TSPI>
 class spi_context;
 
+namespace experimental
+{
+
+template <class TSPI>
+class spi_base;
+
+}
+
 template <class TSPI>
 class spi_traits
 {
@@ -41,6 +49,25 @@ public:
 
 
 #elif defined(ARDUINO)
+
+// UNTESTED CODE
+template <>
+class spi_context< ::SPI> : public SPISettings
+{
+    
+};
+
+template <>
+class spi_traits< ::SPI>
+{
+public:
+    static bool can_set_bitwidth() { return true; }
+    static bool can_set_dataorder() { return true; }
+    
+    static bool async() { return false; }
+};
+
+
 #endif
 
 }
