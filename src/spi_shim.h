@@ -20,7 +20,13 @@ class spi_traits
 public:
     static bool can_set_bitwidth();
     static bool can_set_dataorder();
+    
+    static bool async(); // does this SPI devie support async API
 };
+
+
+template <class TSPI>
+class spi_context;
 
 template <class TSPI>
 class SPI

@@ -14,6 +14,8 @@ class spi_traits< ::SPI>
 public:
     static bool can_set_bitwidth() { return true; }
     static bool can_set_dataorder() { return false; }
+    
+    static bool async() { return DEVICE_SPI_ASYNC == 1; }
 };
 
 template <>
