@@ -1,6 +1,12 @@
 #include <mbed.h>
 #include <mbed_events.h>
 
+#include <SDEP.h>
+
+namespace util = FactUtilEmbedded;
+
+util::SDEP<SPI> sdep(NC, NC, NC);
+
 #if SAM
 #define MAL_LED PA17
 #else
@@ -16,6 +22,8 @@ static void blinky(void) {
 int main()
 {
   EventQueue queue;
+
+  sdep.test();
 
   queue.call_in(2000, printf, "called in 2 seconds!");
   queue.call_every(1000, blinky);
