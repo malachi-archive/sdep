@@ -36,9 +36,11 @@ public:
     }
 
     TSPI& native() { return spi; }
-    
+
     void format(uint8_t bits, spi_modes mode = SPI_MODE0);
     void frequency(int32_t hz = 1000000);
+    void begin();
+    void end();
 };
 
 #ifdef __MBED__

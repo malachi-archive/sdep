@@ -10,3 +10,10 @@ inline void SPI<mbed::SPI>::frequency(int32_t hz)
 {
     spi.frequency(hz);
 }
+
+
+template <>
+inline void SPI<mbed::SPI>::begin() {}
+
+template <>
+inline void SPI<mbed::SPI>::end() {}

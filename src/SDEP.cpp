@@ -20,7 +20,7 @@ public:
 
     bool expired()
     {
-        return timer.read_ms() < timeout;
+        return (uint32_t) timer.read_ms() < timeout;
     }
 
     void set(uint32_t timeout)
@@ -32,15 +32,57 @@ public:
     void reset() { timer.reset(); }
 };
 
+// placeholders
+#define SPI_CS_ENABLE()
+#define SPI_CS_DISABLE()
+
+#define SPI_IGNORED_BYTE          0xFEu /**< SPI default character. Character clocked out in case of an ignored transaction. */
+#define SPI_OVERREAD_BYTE         0xFFu /**< SPI over-read character. Character clocked out after an over-read of the transmit buffer. */
+#define SPI_DEFAULT_DELAY_US 50
+
+
 template <class TSPI>
 inline bool SDEP<TSPI>::irq_pin()
 {
     return irq == 1;
 }
 
+
+/******************************************************************************/
+/*!
+    @brief Flush current response data in the internal FIFO
+
+    @return -1 if no data is available
+*/
+/******************************************************************************/
 template <class TSPI>
-void SDEP<TSPI>::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data)
+inline void SDEP<TSPI>::flush()
 {
+    // TODO
+}
+
+
+template <class TSPI>
+void SDEP<TSPI>::spixfer(void* _buf, uint16_t count)
+{
+    auto buf = static_cast<char*>(_buf);
+    // TODO: refactor this out and call spi class directly
+    while(count--)
+    {
+        *buf = spi.transfer(*buf);
+        buf++;
+    }
+}
+
+template <class TSPI>
+bool SDEP<TSPI>::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data)
+{
+    // MB: pretty sure Adafruit set this to 50
+    constexpr uint32_t  _timeout = 50;
+
+    // flush old response before sending the new command
+    if (more_data == 0) flush();
+
     sdepMsgCommand_t msgCmd;
 
     msgCmd.header.msg_type      = SDEP_MSGTYPE_COMMAND;
@@ -51,15 +93,37 @@ void SDEP<TSPI>::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count,
 
     // Copy payload
     if ( buf != NULL && count > 0) memcpy(msgCmd.payload, buf, count);
+
+    // Starting SPI transaction
+    spi.begin();
+
+    SPI_CS_ENABLE();
+
+    TimeoutTimer tt(_timeout);
+
+    // Bluefruit may not be ready
+    while ( ( spi.transfer(msgCmd.header.msg_type) == SPI_IGNORED_BYTE ) && !tt.expired() )
+    {
+      // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
+      SPI_CS_DISABLE();
+      wait_ms(SPI_DEFAULT_DELAY_US);
+      SPI_CS_ENABLE();
+    }
+
+    bool result = !tt.expired();
+
+    if ( result )
+    {
+      // transfer the rest of the data
+      spixfer((void*) (((uint8_t*)&msgCmd) +1), sizeof(sdepMsgHeader_t)+count-1);
+    }
+
+    SPI_CS_DISABLE();
+
+    spi.end();
+
+    return result;
 }
-
-    // placeholders
-#define SPI_CS_ENABLE()
-#define SPI_CS_DISABLE()
-
-#define SPI_IGNORED_BYTE          0xFEu /**< SPI default character. Character clocked out in case of an ignored transaction. */
-#define SPI_OVERREAD_BYTE         0xFFu /**< SPI over-read character. Character clocked out after an over-read of the transmit buffer. */
-#define SPI_DEFAULT_DELAY_US 50
 
 template <class TSPI>
 bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
@@ -76,8 +140,8 @@ bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
 
     sdepMsgHeader_t* p_header = &p_response->header;
 
-    //if (m_sck_pin == -1)
-      //  SPI.beginTransaction(bluefruitSPI);
+    spi.begin();
+
     SPI_CS_ENABLE();
 
     tt.set(_timeout);
@@ -130,7 +194,6 @@ bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
         if ( tt.expired() ) break;
 
         memset( (&p_header->msg_type)+1, 0xff, sizeof(sdepMsgHeader_t) - 1);
-#ifdef UNUSEDXX
         spixfer((&p_header->msg_type)+1, sizeof(sdepMsgHeader_t) - 1);
 
         // Command is 16-bit at odd address, may have alignment issue with 32-bit chip
@@ -155,15 +218,12 @@ bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
         spixfer(p_response->payload, p_header->length);
 
         result = true;
-#endif
+
     }while(0);
 
     SPI_CS_DISABLE();
 
-#ifdef UNUSEDXX
-    if (m_sck_pin == -1)
-        SPI.endTransaction();
-#endif
+    spi.end();
 
     return result;
 }

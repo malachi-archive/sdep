@@ -8,6 +8,12 @@
 #ifndef ARDUINO
 #define lowByte(w) ((uint8_t) ((w) & 0xff))
 #define highByte(w) ((uint8_t) ((w) >> 8))
+
+inline unsigned int makeWord(unsigned int w) { return w; }
+inline unsigned int makeWord(unsigned char h, unsigned char l) { return (h << 8) | l; }
+
+#define word(...) makeWord(__VA_ARGS__)
+
 #endif
 
 // TODO: refactor naming
@@ -34,9 +40,12 @@ public:
         spi.transfer(10);
     }
 
-    void sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data);
+    bool sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data);
     bool getPacket(sdepMsgResponse_t* p_response);
     bool irq_pin();
+
+    void spixfer(void* buf, uint16_t count);
+    void flush();
 };
 
 }

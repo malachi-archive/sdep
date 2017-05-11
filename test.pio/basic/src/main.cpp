@@ -25,7 +25,7 @@ int main()
 {
   EventQueue queue;
 
-  sdep.test();
+  sdep.sendPacket(0, (const uint8_t*)"hello", 6, 0);
 
   queue.call_in(2000, printf, "called in 2 seconds!");
   queue.call_every(1000, blinky);
