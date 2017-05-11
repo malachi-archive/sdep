@@ -32,10 +32,6 @@ public:
     void reset() { timer.reset(); }
 };
 
-// placeholders
-#define SPI_CS_ENABLE()
-#define SPI_CS_DISABLE()
-
 #define SPI_IGNORED_BYTE          0xFEu /**< SPI default character. Character clocked out in case of an ignored transaction. */
 #define SPI_OVERREAD_BYTE         0xFFu /**< SPI over-read character. Character clocked out after an over-read of the transmit buffer. */
 #define SPI_DEFAULT_DELAY_US 50
@@ -97,7 +93,7 @@ bool SDEP<TSPI>::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count,
     // Starting SPI transaction
     spi.begin();
 
-    SPI_CS_ENABLE();
+    cs_enable();
 
     TimeoutTimer tt(_timeout);
 
@@ -105,9 +101,9 @@ bool SDEP<TSPI>::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count,
     while ( ( spi.transfer(msgCmd.header.msg_type) == SPI_IGNORED_BYTE ) && !tt.expired() )
     {
       // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
-      SPI_CS_DISABLE();
+      cs_disable();
       wait_ms(SPI_DEFAULT_DELAY_US);
-      SPI_CS_ENABLE();
+      cs_enable();
     }
 
     bool result = !tt.expired();
@@ -118,7 +114,7 @@ bool SDEP<TSPI>::sendPacket(uint16_t command, const uint8_t* buf, uint8_t count,
       spixfer((void*) (((uint8_t*)&msgCmd) +1), sizeof(sdepMsgHeader_t)+count-1);
     }
 
-    SPI_CS_DISABLE();
+    cs_disable();
 
     spi.end();
 
@@ -142,7 +138,7 @@ bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
 
     spi.begin();
 
-    SPI_CS_ENABLE();
+    cs_enable();
 
     tt.set(_timeout);
 
@@ -155,9 +151,9 @@ bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
         {
             // Bluefruit may not be ready
             // Disable & Re-enable CS with a bit of delay for Bluefruit to ready itself
-            SPI_CS_DISABLE();
+            cs_disable();
             wait_ms(SPI_DEFAULT_DELAY_US);
-            SPI_CS_ENABLE();
+            cs_enable();
         }
         else if (p_header->msg_type == SPI_OVERREAD_BYTE)
         {
@@ -168,14 +164,14 @@ bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
             // Walkaround: Disable & Re-enable CS with a bit of delay and keep waiting
             // TODO IRQ is supposed to be OFF then ON, it is better to use GPIO trigger interrupt.
 
-            SPI_CS_DISABLE();
+            cs_disable();
             // wait for the clock to be enabled..
 //      while (!digitalRead(m_irq_pin)) {
 //        if ( tt.expired() ) break;
 //      }
 //      if (!digitalRead(m_irq_pin)) break;
             wait_ms(SPI_DEFAULT_DELAY_US);
-            SPI_CS_ENABLE();
+            cs_enable();
         }
     }  while (p_header->msg_type == SPI_IGNORED_BYTE || p_header->msg_type == SPI_OVERREAD_BYTE);
 
@@ -221,7 +217,7 @@ bool SDEP<TSPI>::getPacket(sdepMsgResponse_t *p_response)
 
     }while(0);
 
-    SPI_CS_DISABLE();
+    cs_disable();
 
     spi.end();
 

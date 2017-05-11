@@ -28,10 +28,11 @@ class SDEP
     // MBED specific, need to iron this out
     // +++
     DigitalIn irq;
+    DigitalOut cs;
     // ---
 public:
     template <class ...TArgs>
-    SDEP(PinName pin_irq, TArgs...args) : spi(args...), irq(pin_irq)
+    SDEP(PinName pin_irq, PinName pin_cs, TArgs...args) : spi(args...), irq(pin_irq), cs(pin_cs)
     {
     }
 
@@ -43,6 +44,8 @@ public:
     bool sendPacket(uint16_t command, const uint8_t* buf, uint8_t count, uint8_t more_data);
     bool getPacket(sdepMsgResponse_t* p_response);
     bool irq_pin();
+    void cs_enable() { cs = 0; }
+    void cs_disable() { cs = 1; }
 
     void spixfer(void* buf, uint16_t count);
     void flush();

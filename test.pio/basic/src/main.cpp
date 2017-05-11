@@ -6,8 +6,9 @@
 namespace util = FactUtilEmbedded;
 
 #define PIN_IRQ NC
+#define PIN_CS NC
 
-util::SDEP<SPI> sdep(PIN_IRQ, NC, NC, NC);
+util::SDEP<SPI> sdep(PIN_IRQ, PIN_CS, NC, NC, NC);
 
 #if SAM
 #define MAL_LED PA17
