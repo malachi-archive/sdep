@@ -28,6 +28,10 @@ public:
 
     int transfer(uint16_t value);
     void transfer(const void* tx_buffer, size_t tx_length, void* rx_buffer, size_t rx_length);
+    void transfer(void* rxtx_buffer, size_t length)
+    {
+        transfer(rxtx_buffer, length, rxtx_buffer, length);
+    }
 
     template <class ...TArgs>
     SPI(TArgs...args) : spi(args...)
