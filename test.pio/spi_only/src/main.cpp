@@ -37,9 +37,11 @@ static void blinky(void) {
 
 static void spi_send()
 {
-    // FIX: This doesn't work, trying to read back into const probably freaks it out
-    // clue that this API should be easier to understand
-    spi.transfer((void*)"\1\2\3\4", 4);
+    char buf[] = "\1\2\3\4";
+
+    spi.write(buf, 4);
+
+    spi.transfer(5);
 
     /*
     spi.transfer(1);
