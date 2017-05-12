@@ -48,9 +48,6 @@ static void xfer_more_rx(SPI< ::SPI>& spi, const uint8_t* tx_buffer, size_t tx_l
 }
 
 
-// TODO: break this into two private transfer functions:
-// transfer_tx_greater and transfer_rx_greater as it will optimize to faster and probably
-// smaller code
 template <>
 void SPI< ::SPI>::transfer(const void* tx_buffer, size_t tx_length, void* rx_buffer, size_t rx_length)
 {
@@ -63,6 +60,7 @@ void SPI< ::SPI>::transfer(const void* tx_buffer, size_t tx_length, void* rx_buf
         xfer_more_rx(*this, (const uint8_t*)tx_buffer, tx_length, (uint8_t*)rx_buffer, rx_length);
 #endif
 }
+
 
 }
 

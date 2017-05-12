@@ -2,7 +2,7 @@
 #include <mbed_events.h>
 
 #include <SDEP.h>
-#include <SPI.h>
+//#include <SPI.h>
 
 namespace util = FactUtilEmbedded;
 
@@ -25,7 +25,7 @@ namespace util = FactUtilEmbedded;
 //#define SCK SPI_SCK
 #endif
 
-util::SPI<SPI> spi(MOSI, MISO, SCK);
+util::hal::SPI spi(MOSI, MISO, SCK);
 
 
 static void blinky(void) {
@@ -53,13 +53,20 @@ static void spi_send()
 
 int main()
 {
-  EventQueue queue;
+    EventQueue queue;
 
-  //sdep.sendPacket(0, (const uint8_t*)"hello", 6, 0);
+    //sdep.sendPacket(0, (const uint8_t*)"hello", 6, 0);
 
-  queue.call_in(2000, printf, "called in 2 seconds!");
-  queue.call_every(1000, blinky);
-  queue.call_every(5000, spi_send);
+    // TODO: See if linker will take it easy on us and not try to link un functions
+    // whose static if here never resolves to true
+    if(util::hal::SPI::traits_t::async())
+    {
 
-  queue.dispatch();
+    }
+
+    queue.call_in(2000, printf, "called in 2 seconds!");
+    queue.call_every(1000, blinky);
+    queue.call_every(5000, spi_send);
+
+    queue.dispatch();
 }

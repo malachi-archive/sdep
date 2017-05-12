@@ -11,3 +11,10 @@ inline void SPI< ::SPI>::end()
 {
     spi.endTransaction();
 }
+
+namespace hal
+{
+
+typedef FactUtilEmbedded::SPI< ::SPI> SPI;
+
+}

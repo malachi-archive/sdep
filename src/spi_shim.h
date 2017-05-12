@@ -24,14 +24,24 @@ class SPI
     spi_context<TSPI> context;
 
 public:
-    typedef spi_traits<TSPI> traits;
+    typedef spi_traits<TSPI> traits_t;
+    typedef experimental::spi_user_context<TSPI> async_context_t;
 
     int transfer(uint16_t value);
     void transfer(const void* tx_buffer, size_t tx_length, void* rx_buffer, size_t rx_length);
 
+    template <class T>
+    void transfer(const T* tx_buffer, size_t tx_length, T* rx_buffer, size_t rx_length,
+        async_context_t async_context);
+
     void write(const void* buffer, size_t length)
     {
         transfer(buffer, length, nullptr, 0);
+    }
+
+    void write(const void* buffer, size_t length, async_context_t async_context)
+    {
+        transfer(buffer, length, nullptr, 0, async_context);
     }
 
     void read(void* buffer, size_t length)
